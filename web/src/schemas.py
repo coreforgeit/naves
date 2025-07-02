@@ -53,7 +53,7 @@ class RowIn(BaseModel):
 
     @field_validator('sport', 'tournament', 'match', 'coefficient', 'prediction', 'bet', mode='after')
     def empty_string_to_none(cls, v):
-        return v if v == "" else None
+        return v if v != "" else None
 
     model_config = {
         "str_strip_whitespace": True
