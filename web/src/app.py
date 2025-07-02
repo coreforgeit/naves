@@ -77,7 +77,7 @@ async def add_row(
             err: dict = e.errors()[0]
             e_text = err.get('msg', 'Value error, f')[13:]
             result = RowResult(
-                row=body.row.get("row_number") if isinstance(item, dict) else None,
+                row=body.row.get("row_number"),
                 success=False,
                 error_text=f"{e_text}"
             )
