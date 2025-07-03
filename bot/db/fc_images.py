@@ -7,7 +7,6 @@ from datetime import datetime, date
 import typing as t
 
 from .base import Base
-from enums import SPORT_EMOJI
 
 
 class FcImage(Base):
