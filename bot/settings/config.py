@@ -12,6 +12,10 @@ class Config:
     else:
         token = os.getenv("TOKEN")
 
+    bet_url = 'https://google.com'
+
+    bot_id = int(token.split(':')[0])
+
     db_host = os.getenv('DB_HOST')
     db_port = os.getenv('DB_PORT')
     db_name = os.getenv('POSTGRES_DB')

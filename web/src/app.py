@@ -42,6 +42,8 @@ async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
 # Выносим логику записи в отдельную функцию
 async def process_row(payload: RowIn, session: AsyncSession) -> RowResult:
     try:
+        logger.warning(payload)
+        logger.warning('----')
         await GoogleTable.add(
             session=session,
             row_id=payload.row_number,

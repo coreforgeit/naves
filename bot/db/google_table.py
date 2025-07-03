@@ -2,11 +2,12 @@ import sqlalchemy as sa
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.dialects import postgresql as psql
 from sqlalchemy.ext.asyncio import AsyncSession
-from datetime import datetime
+from datetime import datetime, date
 
+import typing as t
 
-# from .base import Base, begin_connection
 from .base import Base
+from enums import SPORT_EMOJI
 
 
 class GoogleTable(Base):
@@ -16,7 +17,7 @@ class GoogleTable(Base):
     sport: Mapped[str] = mapped_column(sa.Text, nullable=True)
     tournament: Mapped[str] = mapped_column(sa.Text, nullable=True)
     match: Mapped[str] = mapped_column(sa.Text, nullable=True)
-    date: Mapped[datetime] = mapped_column(sa.DateTime, nullable=True)
+    date: Mapped[date] = mapped_column(sa.Date, nullable=True)
     is_top_match: Mapped[bool] = mapped_column(sa.Boolean, nullable=True)
     coefficient: Mapped[str] = mapped_column(sa.Text, nullable=True)
     prediction: Mapped[str] = mapped_column(sa.Text, nullable=True)
@@ -86,3 +87,59 @@ class GoogleTable(Base):
         async with session as conn:
             await conn.execute(stmt)
             await conn.commit()
+
+    @classmethod
+    async def get_unique_sports(cls, session: AsyncSession) -> list[str]:
+        stmt = sa.select(sa.func.distinct(cls.sport)).where(cls.sport.is_not(None))
+        result = await session.execute(stmt)
+        sports = [row[0] for row in result.fetchall()]
+        return sports
+
+    @classmethod
+    async def get_tournaments_by_sport(cls, session: AsyncSession, sport: str) -> list[str]:
+        today = datetime.now().date()
+        stmt = (
+            sa.select(sa.func.distinct(cls.tournament))
+            .where(
+                cls.sport == sport,
+                cls.date >= today
+            )
+        )
+        result = await session.execute(stmt)
+        tournaments = [row[0] for row in result.fetchall() if row[0]]
+        return tournaments
+
+    @classmethod
+    async def get_forecast_many(
+            cls,
+            session: AsyncSession,
+            sport: str,
+            tournament: str,
+            only_top: bool
+    ) -> list[t.Self]:
+        today = datetime.now().date()
+        stmt = sa.select(cls).where(cls.date >= today)
+
+        if only_top:
+            stmt = stmt.where(cls.is_top_match.is_(True))
+        else:
+            stmt = stmt.where(
+                cls.sport == sport,
+                cls.tournament == tournament
+            )
+
+        result = await session.execute(stmt)
+        return result.scalars().all()
+
+    @classmethod
+    async def search_by_match(cls, session: AsyncSession, substring: str, sport: str = None) -> list[t.Self]:
+        stmt = sa.select(cls).limit(8)
+
+        if substring:
+            stmt = stmt.where(sa.func.lower(cls.match).like(f"%{substring.lower()}%"))
+
+        if sport:
+            stmt = stmt.where(cls.sport == sport)
+
+        result = await session.execute(stmt)
+        return result.scalars().all()

@@ -41,7 +41,6 @@ class RowIn(BaseModel):
         if s == "нет":
             return False
         raise ValueError('Поле должно содержать только "да" или "нет"')
-        # raise BaseException('Поле должно содержать только "да" или "нет"')
 
     @field_validator('image', 'broadcast', mode='before')
     def parse_url(cls, v):
@@ -51,9 +50,9 @@ class RowIn(BaseModel):
         except Exception as e:
             raise ValueError(f'{e}')
 
-    # @field_validator('sport', 'tournament', 'match', 'coefficient', 'prediction', 'bet', mode='after')
-    # def empty_string_to_none(cls, v):
-    #     return v if v != "" else None
+    @field_validator('sport', 'tournament', 'match', 'coefficient', 'prediction', 'bet', mode='after')
+    def empty_string_to_none(cls, v):
+        return v if v != "" else None
 
     model_config = {
         "str_strip_whitespace": True

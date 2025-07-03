@@ -17,7 +17,7 @@ class User(Base):
     id: Mapped[int] = mapped_column(sa.BigInteger, primary_key=True)
     full_name: Mapped[str] = mapped_column(sa.String)
     username: Mapped[str] = mapped_column(sa.String, nullable=True)
-    subscription_end: Mapped[datetime] = mapped_column(sa.DateTime, nullable=True)
+    # is_ban: Mapped[bool] = mapped_column(sa.Boolean, default=False)
 
     @classmethod
     async def add(cls, session: AsyncSession, user_id: int, full_name: str, username: str) -> None:

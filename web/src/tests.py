@@ -8,6 +8,7 @@ def test_add_row():
             "id": 4,
             "sport": "Хоккей",
             "tournament": "НХЛ",
+            # "tournament": " ",
             "match": "Детройт - Юта",
             "date": "2026-05-23T21:00:00.000Z",
             "is_top_match": "да",
@@ -97,4 +98,4 @@ def test_add_rows():
 
 if __name__ == "__main__":
     test_add_row()
-    test_add_rows()
+    # test_add_rows()

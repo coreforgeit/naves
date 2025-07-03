@@ -10,14 +10,14 @@ from init import set_main_menu, bot, ENGINE, DBSessionMiddleware
 from settings import conf, log_error
 from db.base import init_models
 from handlers.main_menu import main_router
+from handlers import client_router
 from handlers.exceptions import error_router
-
-# from handlers.exceptions import error_router
 
 
 dp = Dispatcher()
 dp.message.middleware(DBSessionMiddleware())
 dp.callback_query.middleware(DBSessionMiddleware())
+dp.inline_query.middleware(DBSessionMiddleware())
 
 
 async def main() -> None:
@@ -25,6 +25,7 @@ async def main() -> None:
     await set_main_menu()
 
     dp.include_router(main_router)
+    dp.include_router(client_router)
     dp.include_router(error_router)
     await dp.start_polling(bot)
     await bot.session.close()

@@ -1,4 +1,4 @@
-# from .main_menu import dp
-# from .exceptions import dp
+from .search import client_router
+from .search_inline import client_router
 
-# __all__ = ['dp']
+__all__ = ['client_router']
