@@ -7,6 +7,7 @@ class CB(Enum):
 
     SEARCH_START = 'search_start'
     SEARCH_TOURNAMENT = 'search_tournament'
+    SEARCH_MATCH = 'search_match'
     SEARCH_GET_RESULT = 'search_get_result'
 
     # FORECAST_TOP = 'forecast_top'

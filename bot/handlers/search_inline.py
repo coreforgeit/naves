@@ -4,10 +4,10 @@ from aiogram.filters.state import StateFilter
 from sqlalchemy.ext.asyncio import AsyncSession
 
 
-import db
+import models
 import keyboards as kb
 import utils as ut
-from db import User
+from models import User
 from settings import conf, log_error
 from init import client_router, bot
 from enums import CB, UserState, Action
@@ -22,10 +22,10 @@ async def inline_search_handler(inline_query: InlineQuery, state: FSMContext, se
     sport = data.get('sport')
 
     # Здесь логика поиска (например, по ключевым словам)
-    forecasts = await db.GoogleTable.search_by_match(session, substring=query, sport=sport)
+    forecasts = await models.GoogleTable.search_by_match(session, substring=query, sport=sport)
     # если нет результатов, то возвращает все
     # if not forecasts:
-    #     forecasts = await db.GoogleTable.search_by_match(session, substring='')
+    #     forecasts = await models.GoogleTable.search_by_match(session, substring='')
 
     results = []
     if forecasts:
@@ -58,7 +58,7 @@ async def inline_search_handler(inline_query: InlineQuery, state: FSMContext, se
 #         await msg.delete()
 #
 #         forecast_id = id(msg.text)
-#         forecast = await db.GoogleTable.get_by_id(session, entry_id=forecast_id)
+#         forecast = await models.GoogleTable.get_by_id(session, entry_id=forecast_id)
 #         await ut.send_forecast(
 #             session=session,
 #             chat_id=msg.chat.id,

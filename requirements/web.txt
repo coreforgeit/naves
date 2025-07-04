@@ -3,3 +3,8 @@ uvicorn[standard]
 asyncpg
 sqlalchemy
 requests
+passlib
+setuptools
+redis
+sqladmin
+

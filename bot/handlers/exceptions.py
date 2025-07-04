@@ -2,7 +2,7 @@ from aiogram.types import ErrorEvent, Message, CallbackQuery
 
 from init import error_router
 from settings import log_error, conf
-from db import LogsError
+from models import LogsError
 
 
 if not conf.debug:

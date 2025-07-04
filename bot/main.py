@@ -5,10 +5,10 @@ import sys
 from aiogram import Dispatcher
 from datetime import datetime
 
-import db
+import models
 from init import set_main_menu, bot, ENGINE, DBSessionMiddleware
 from settings import conf, log_error
-from db.base import init_models
+from models.base import init_models
 from handlers.main_menu import main_router
 from handlers import client_router
 from handlers.exceptions import error_router

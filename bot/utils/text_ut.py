@@ -1,6 +1,6 @@
 from datetime import date
 
-import db
+import models
 from settings import conf
 from enums import SPORT_EMOJI
 

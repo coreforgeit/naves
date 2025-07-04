@@ -29,5 +29,8 @@ class Config:
     time_format = '%H:%M'
     datetime_format = '%H:%M %d.%m.%Y'
 
+    admin_user = os.getenv('USER')
+    admin_pass = os.getenv('PASS')
+
 
 conf = Config()

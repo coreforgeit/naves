@@ -88,14 +88,18 @@ class GoogleTable(Base):
             await conn.commit()
 
     @classmethod
-    async def get_unique_sports(cls, session: AsyncSession) -> list[str]:
+    async def get_unique_sports(cls, session: AsyncSession, only_top: bool) -> list[str]:
         stmt = sa.select(sa.func.distinct(cls.sport)).where(cls.sport.is_not(None))
+
+        if only_top:
+            stmt = stmt.where(cls.is_top_match.is_(True))
+
         result = await session.execute(stmt)
         sports = [row[0] for row in result.fetchall()]
         return sports
 
     @classmethod
-    async def get_tournaments_by_sport(cls, session: AsyncSession, sport: str) -> list[str]:
+    async def get_tournaments_by_sport(cls, session: AsyncSession, sport: str, only_top: bool) -> list[str]:
         today = datetime.now().date()
         stmt = (
             sa.select(sa.func.distinct(cls.tournament))
@@ -104,6 +108,10 @@ class GoogleTable(Base):
                 cls.date >= today
             )
         )
+
+        if only_top:
+            stmt = stmt.where(cls.is_top_match.is_(True))
+
         result = await session.execute(stmt)
         tournaments = [row[0] for row in result.fetchall() if row[0]]
         return tournaments
@@ -117,15 +125,14 @@ class GoogleTable(Base):
             only_top: bool
     ) -> list[t.Self]:
         today = datetime.now().date()
-        stmt = sa.select(cls).where(cls.date >= today)
+        stmt = sa.select(cls).where(
+            cls.date >= today,
+            cls.sport == sport,
+            cls.tournament == tournament
+        )
 
         if only_top:
             stmt = stmt.where(cls.is_top_match.is_(True))
-        else:
-            stmt = stmt.where(
-                cls.sport == sport,
-                cls.tournament == tournament
-            )
 
         result = await session.execute(stmt)
         return result.scalars().all()
