@@ -41,11 +41,12 @@ class RowIn(BaseModel):
         try:
             dt = datetime.fromisoformat(str(v).replace("Z", "+00:00"))
             # Переводим на +3 часа (Москва)
-            dt_msk = dt.astimezone(conf.tz(timedelta(hours=3)))
+            # dt_msk = dt.astimezone(conf.tz(timedelta(hours=3)))
+            dt_msk = dt + timedelta(hours=3)
             # Возвращаем только часы и минуты
             return dt_msk.time()
         except Exception:
-            raise ValueError("Некорректный формат даты, требуется ISO 8601 (например, 2026-05-23T21:00:00.000Z)")
+            raise ValueError("Некорректный формат времени")
 
     @field_validator('is_top_match', mode='before')
     def parse_bool(cls, v):
