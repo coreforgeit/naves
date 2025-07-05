@@ -25,8 +25,8 @@ async def process_row(payload: RowIn, session: AsyncSession) -> RowResult:
             sport=payload.sport,
             tournament=payload.tournament,
             match=payload.match,
-            date=payload.date,
-            time=payload.time,
+            date=payload.date_match,
+            time=payload.time_match,
             is_top_match=payload.is_top_match,
             coefficient=payload.coefficient,
             prediction=payload.prediction,
@@ -36,8 +36,10 @@ async def process_row(payload: RowIn, session: AsyncSession) -> RowResult:
         )
         return RowResult(row=payload.row_number, success=True)
     except ValueError as e:
+        logger.warning(e, exc_info=True)
         return RowResult(row=payload.row_number, success=False, error_text=str(e))
     except Exception as e:
+        logger.warning(e, exc_info=True)
         return RowResult(row=payload.row_number, success=False, error_text=f"{e}")
 
 
@@ -53,7 +55,7 @@ async def add_row(
             result = await process_row(payload, session)
         except Exception as e:
             err: dict = e.errors()[0]
-            e_text = err.get('msg', 'Value error, f')[13:]
+            e_text = err.get('msg', 'Value error, f')
             result = RowResult(
                 row=body.row.get("row_number"),
                 success=False,
@@ -75,6 +77,7 @@ async def add_rows(
     body: RowRequestMany,
     session: AsyncSession = Depends(get_async_session)
 ) -> list[RowResult]:
+    logger.warning('add_rows')
     try:
         results = []
 
@@ -83,7 +86,7 @@ async def add_rows(
                 payload = RowIn.parse_obj(item)
             except Exception as e:
                 err: dict = e.errors()[0]
-                e_text = err.get('msg', 'Value error, f')[13:]
+                e_text = err.get('msg', 'Value error, f')
                 results.append(RowResult(
                     row=item.get("row_number") if isinstance(item, dict) else None,
                     success=False,

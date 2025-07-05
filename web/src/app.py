@@ -31,7 +31,6 @@ async def create_admin():
     from src.models import AdminUser
     async with AsyncSessionLocal() as session:
         res = await AdminUser.add_admin_user(session, username=conf.admin_user, password=conf.admin_pass)
-        logger.warning(f'res: {res}')
 
 app.add_middleware(AdminAuthMiddleware)
 

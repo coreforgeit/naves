@@ -1,3 +1,5 @@
+import logging
+
 from pydantic import BaseModel, field_validator
 from typing import Optional
 from datetime import datetime, date, time, timedelta
@@ -10,8 +12,8 @@ class RowIn(BaseModel):
     sport: Optional[str] = None
     tournament: Optional[str] = None
     match: Optional[str] = None
-    date: Optional[datetime] = None
-    time: Optional[datetime] = None
+    date_match: Optional[date] = None
+    time_match: Optional[time] = None
     is_top_match: Optional[bool] = None
     coefficient: Optional[str] = None
     prediction: Optional[str] = None
@@ -20,31 +22,26 @@ class RowIn(BaseModel):
     broadcast: Optional[str] = None
     row_number: Optional[int] = None
 
-    @field_validator('date', mode='before')
+    @field_validator('date_match', mode='before')
     def parse_date(cls, v):
         if v is None:
             return None
-        if isinstance(v, date):
-            return v
         try:
-            # Преобразуем строку ISO в datetime
-            return datetime.fromisoformat(str(v).replace("Z", "")).date()
-        except Exception:
-            raise ValueError("Некорректный формат даты, требуется ISO 8601 (например, 2026-05-23T21:00:00.000Z)")
+            t = datetime.strptime(v, conf.date_format)
 
-    @field_validator('time', mode='before')
+            return t.date()
+        except Exception:
+            raise ValueError("Некорректный формат даты")
+
+    @field_validator('time_match', mode='before')
     def parse_time(cls, v):
         if v is None:
             return None
-        if isinstance(v, time):
-            return v
         try:
-            dt = datetime.fromisoformat(str(v).replace("Z", "+00:00"))
-            # Переводим на +3 часа (Москва)
-            # dt_msk = dt.astimezone(conf.tz(timedelta(hours=3)))
-            dt_msk = dt + timedelta(hours=3)
-            # Возвращаем только часы и минуты
-            return dt_msk.time()
+            t = datetime.strptime(v, conf.time_format)
+
+            return t.time()
+            # return datetime.now().time()
         except Exception:
             raise ValueError("Некорректный формат времени")
 
@@ -55,11 +52,9 @@ class RowIn(BaseModel):
         if isinstance(v, bool):
             return v
         s = str(v).strip().lower()
-        if s == "да":
-            return True
-        if s == "нет":
-            return False
-        raise ValueError('Поле должно содержать только "да" или "нет"')
+        return s == "да"
+
+        # raise ValueError('Поле должно содержать только "да" или "нет"')
 
     @field_validator('image', 'broadcast', mode='before')
     def parse_url(cls, v):
@@ -69,7 +64,7 @@ class RowIn(BaseModel):
         except Exception as e:
             raise ValueError(f'{e}')
 
-    @field_validator('sport', 'tournament', 'match', 'coefficient', 'prediction', 'bet', mode='after')
+    @field_validator('sport', 'tournament', 'match', 'coefficient', 'prediction', 'bet', mode='before')
     def empty_string_to_none(cls, v):
         return v if v != "" else None
 
