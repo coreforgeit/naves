@@ -26,6 +26,7 @@ async def process_row(payload: RowIn, session: AsyncSession) -> RowResult:
             tournament=payload.tournament,
             match=payload.match,
             date=payload.date,
+            time=payload.time,
             is_top_match=payload.is_top_match,
             coefficient=payload.coefficient,
             prediction=payload.prediction,

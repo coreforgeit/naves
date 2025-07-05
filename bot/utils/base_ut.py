@@ -32,15 +32,16 @@ def get_adjacent_enum(enum_cls, current_value, enum_step=1) -> str:
 # текст прадсказания
 def get_forecast_text(forecast: models.GoogleTable) -> str:
     emoji = SPORT_EMOJI.get(forecast.sport.lower(), '')
-    data_str = forecast.date.strftime(conf.date_format)
+    data_str = forecast.date.strftime(conf.date_format) if forecast.date else None
+    time_str = forecast.time.strftime(conf.time_format) if forecast.time else None
     broadcast = f'📺 Прямая трансляция: <a href="{forecast.broadcast}">Смотреть</a>\n' if forecast.broadcast else ''
     return (
         f'{emoji} {forecast.tournament}: {forecast.match}\n'
-        f'📅 {data_str} None\n'
+        f'📅 {data_str} {time_str}\n'
         f'{broadcast}\n'
         f'📈 {forecast.coefficient}\n\n'
         f'🔮 Прогноз: {forecast.prediction}\n\n'
-        f'🎯 Ставка: {forecast.bet}\n'
+        f'🎯 Ставка: <b>{forecast.bet}</b>\n'
     ).replace('None', 'н/д').strip()
 
 

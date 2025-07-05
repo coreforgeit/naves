@@ -17,7 +17,10 @@ class User(Base):
     id: Mapped[int] = mapped_column(sa.BigInteger, primary_key=True)
     full_name: Mapped[str] = mapped_column(sa.String)
     username: Mapped[str] = mapped_column(sa.String, nullable=True)
-    # is_ban: Mapped[bool] = mapped_column(sa.Boolean, default=False)
+    is_ban: Mapped[bool] = mapped_column(sa.Boolean, default=False)
+
+    def __repr__(self):
+        return f"{self.full_name}" if self.full_name else f'{self.id}'
 
     @classmethod
     async def add(cls, session: AsyncSession, user_id: int, full_name: str, username: str) -> None:

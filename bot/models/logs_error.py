@@ -1,11 +1,9 @@
 from sqlalchemy.orm import Mapped, mapped_column
-from datetime import datetime, date, time
-from sqlalchemy.dialects import postgresql as psql
+from sqlalchemy.ext.asyncio import AsyncSession
 
 import sqlalchemy as sa
 import typing as t
 
-# from .base import Base, begin_connection
 from .base import Base
 
 
@@ -17,9 +15,9 @@ class LogsError(Base):
     comment: Mapped[str] = mapped_column(sa.String, nullable=True)
 
     @classmethod
-    async def add(cls, user_id: int, traceback: str, message: str) -> None:
-        query = sa.insert(cls).values(user_id=user_id, traceback=traceback, message=message)
+    async def add(cls, session: AsyncSession, user_id: int, traceback: str, message: str) -> None:
+        stmt = sa.insert(cls).values(user_id=user_id, traceback=traceback, message=message)
 
-        async with begin_connection() as conn:
-            await conn.execute(query)
+        async with session as conn:
+            await conn.execute(stmt)
             await conn.commit()

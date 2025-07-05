@@ -1,7 +1,8 @@
-from aiogram.types import InlineQuery, InlineQueryResultArticle, InputTextMessageContent, Message, InputMediaPhoto
+from aiogram.types import InlineQuery, InlineQueryResultArticle, InputTextMessageContent, ChosenInlineResult, InputMediaPhoto
 from aiogram.fsm.context import FSMContext
 from aiogram.filters.state import StateFilter
 from sqlalchemy.ext.asyncio import AsyncSession
+from uuid import uuid4
 
 
 import models
@@ -20,12 +21,13 @@ async def inline_search_handler(inline_query: InlineQuery, state: FSMContext, se
 
     data = await state.get_data()
     sport = data.get('sport')
+    tournament = data.get('tournament')
 
     # Здесь логика поиска (например, по ключевым словам)
-    forecasts = await models.GoogleTable.search_by_match(session, substring=query, sport=sport)
+    forecasts = await models.GoogleTable.search_by_match(session, substring=query, sport=sport, tournament=tournament)
     # если нет результатов, то возвращает все
-    # if not forecasts:
-    #     forecasts = await models.GoogleTable.search_by_match(session, substring='')
+    if not forecasts:
+        forecasts = await models.GoogleTable.search_by_match(session, substring='')
 
     results = []
     if forecasts:
@@ -33,7 +35,8 @@ async def inline_search_handler(inline_query: InlineQuery, state: FSMContext, se
             text = ut.get_forecast_text(forecast)
             results.append(
                 InlineQueryResultArticle(
-                    id=str(forecast.id),
+                    # id=str(forecast.id),
+                    id=str(uuid4()),
                     title=forecast.match,
                     input_message_content=InputTextMessageContent(
                         message_text=text
@@ -43,28 +46,3 @@ async def inline_search_handler(inline_query: InlineQuery, state: FSMContext, se
             )
     # Отправляем результаты пользователю
     await inline_query.answer(results, cache_time=1)
-
-
-# @client_router.chosen_inline_result()
-# @client_router.chosen_inline_result(StateFilter(UserState.SEARCH.value))
-# async def handle_chosen_inline_result(cq: ChosenInlineResult, state: FSMContext, session: AsyncSession):
-#     print(f'@client_router.chosen_inline_result(): {cq.query}')
-#
-#
-# @client_router.message()
-# @client_router.message(StateFilter(UserState.SEARCH.value))
-# async def handle_chosen_inline_result(msg: Message, state: FSMContext, session: AsyncSession):
-#     if msg.text.isdigit():
-#         await msg.delete()
-#
-#         forecast_id = id(msg.text)
-#         forecast = await models.GoogleTable.get_by_id(session, entry_id=forecast_id)
-#         await ut.send_forecast(
-#             session=session,
-#             chat_id=msg.chat.id,
-#             forecast=forecast
-#         )
-
-    # else:
-    #     print(f'@client_router.message(): {msg.text}')
-

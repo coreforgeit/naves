@@ -19,19 +19,20 @@ auth_router = APIRouter()
 
 class AdminAuthMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
+
         # Проверяем только /admin
         if request.url.path.startswith("/admin"):
             username = request.cookies.get("username")
             token = request.cookies.get("session_token")
-            logging.warning(f'username: {username}')
-            logging.warning(f'token: {token}')
+            # logging.warning(f'username: {username}')
+            # logging.warning(f'token: {token}')
 
             if not username or not token:
                 return RedirectResponse(url="/auth/login", status_code=302)
 
             async with AsyncSessionLocal() as session:
                 check = await AdminSession.check(session, username=username, session_token=token)
-            logging.warning(f'check: {check}')
+            # logging.warning(f'check: {check}')
             if check:
                 return await call_next(request)
 
@@ -42,28 +43,35 @@ class AdminAuthMiddleware(BaseHTTPMiddleware):
 
 @auth_router.get("/login", response_class=HTMLResponse)
 async def login_page(request: Request):
+    logging.warning(f'login get')
+
     return templates.TemplateResponse("login.html", {"request": request})
 
 
 @auth_router.post("/login")
 async def login(request: Request, username: str = Form(...), password: str = Form(...)):
+    # logging.warning(f'login post')
+
     async with AsyncSessionLocal() as session:
         user = await AdminUser.authenticate_user(
             session,
             username=username,
             password=password
         )
-
+        logging.warning(f'user: {user}')
         if not user:
             return templates.TemplateResponse("login.html", {"request": request, "error": "Неверный логин или пароль"})
 
         token = secrets.token_urlsafe(32)
-
+        logging.warning(f'token: {token}')
         await AdminSession.add(session, username=username, session_token=token)
 
     response = RedirectResponse(url="/admin", status_code=status.HTTP_302_FOUND)
     response.set_cookie("username", username, httponly=True, max_age=60 * 60 * 24 * 365 * 10)
     response.set_cookie("session_token", token, httponly=True, max_age=60 * 60 * 24 * 365 * 10)
+
+    logging.warning(f'response: {response}')
+
     return response
 
 

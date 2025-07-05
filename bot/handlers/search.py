@@ -17,6 +17,10 @@ from enums import CB, UserState, Action, SearchStep, MenuCommand
 async def search_start(cb: CallbackQuery, state: FSMContext, session: AsyncSession):
     _, value = cb.data.split(':')
 
+    # действия пользователя
+    action_button = value
+    comment = None
+
     step_key = 'step'
     current_state = await state.get_state()
     if not current_state:
@@ -30,15 +34,16 @@ async def search_start(cb: CallbackQuery, state: FSMContext, session: AsyncSessi
     next_step = ut.get_adjacent_enum(enum_cls=SearchStep, current_value=step, enum_step=enum_step)
     await state.update_data(data={step_key: next_step})
 
-    print(f'data: {data}')
-    print(f'step: {step}')
-    print(f'next_step: {next_step}')
+    if value == Action.BACK.value:
+        comment = action_button
+        action_button = '🔙 Назад'
 
     if next_step == SearchStep.SPORT.value:
-
         if value != Action.BACK.value:
             top_match = bool(int(value)) if value.isdigit() else False
             await state.update_data(data={'top_match': top_match})
+
+            action_button = '🔥 Топ-прогнозы' if top_match else '🔍 Поиск матча'
 
         sports = await models.GoogleTable.get_unique_sports(session,  only_top=data.get('sport', False))
         text = f'Выбери вид спорта'
@@ -87,6 +92,8 @@ async def search_start(cb: CallbackQuery, state: FSMContext, session: AsyncSessi
             chat_id=cb.from_user.id,
             forecast=forecast,
         )
+        # что нажал пользователь
+        await models.LogsUser.add(session=session, user_id=cb.from_user.id, button=forecast.match)
         return
     else:
         text = f'‼️ Произошёл сбой, попробуйте ещё раз /{MenuCommand.START.command}'
@@ -96,6 +103,14 @@ async def search_start(cb: CallbackQuery, state: FSMContext, session: AsyncSessi
         await cb.message.edit_text(text=text, reply_markup=reply_markup)
     except Exception as e:
         await cb.message.answer(text=text, reply_markup=reply_markup)
+
+    # что нажал пользователь
+    await models.LogsUser.add(
+        session=session,
+        user_id=cb.from_user.id,
+        button=action_button,
+        comment=comment
+    )
 
 
 

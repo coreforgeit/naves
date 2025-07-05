@@ -13,6 +13,9 @@ import uvloop
 from settings import conf
 from enums.base import MenuCommand
 
+ENGINE = create_async_engine(url=conf.db_url)
+
+
 
 asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 loop = asyncio.get_event_loop()
@@ -27,15 +30,10 @@ client_router = Router()
 error_router = Router()
 
 
-ENGINE = create_async_engine(url=conf.db_url)
-begin_connection = sessionmaker(bind=ENGINE, class_=AsyncSession, expire_on_commit=False)
 
 
-class DBSessionMiddleware(BaseMiddleware):
-    async def __call__(self, handler, event, data):
-        async with begin_connection() as session:
-            data['session'] = session
-            return await handler(event, data)
+
+
 
 
 async def set_main_menu():

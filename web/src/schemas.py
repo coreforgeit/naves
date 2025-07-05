@@ -1,6 +1,8 @@
 from pydantic import BaseModel, field_validator
 from typing import Optional
-from datetime import datetime, date
+from datetime import datetime, date, time, timedelta
+
+from src.config import conf
 
 
 class RowIn(BaseModel):
@@ -9,6 +11,7 @@ class RowIn(BaseModel):
     tournament: Optional[str] = None
     match: Optional[str] = None
     date: Optional[datetime] = None
+    time: Optional[datetime] = None
     is_top_match: Optional[bool] = None
     coefficient: Optional[str] = None
     prediction: Optional[str] = None
@@ -26,6 +29,21 @@ class RowIn(BaseModel):
         try:
             # Преобразуем строку ISO в datetime
             return datetime.fromisoformat(str(v).replace("Z", "")).date()
+        except Exception:
+            raise ValueError("Некорректный формат даты, требуется ISO 8601 (например, 2026-05-23T21:00:00.000Z)")
+
+    @field_validator('time', mode='before')
+    def parse_time(cls, v):
+        if v is None:
+            return None
+        if isinstance(v, time):
+            return v
+        try:
+            dt = datetime.fromisoformat(str(v).replace("Z", "+00:00"))
+            # Переводим на +3 часа (Москва)
+            dt_msk = dt.astimezone(conf.tz(timedelta(hours=3)))
+            # Возвращаем только часы и минуты
+            return dt_msk.time()
         except Exception:
             raise ValueError("Некорректный формат даты, требуется ISO 8601 (например, 2026-05-23T21:00:00.000Z)")
 

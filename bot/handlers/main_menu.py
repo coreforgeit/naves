@@ -26,6 +26,8 @@ async def com_start(msg: Message, state: FSMContext, session: AsyncSession):
 
     await msg.answer('<b>🔹 Главное меню </b>', reply_markup=kb.get_main_menu_kb())
 
+    await models.LogsUser.add(session=session, user_id=msg.from_user.id, button=msg.text)
+
 
 @main_router.callback_query(lambda cb: cb.data.startswith(CB.COM_START.value))
 async def search_start(cb: CallbackQuery, state: FSMContext, session: AsyncSession):
@@ -35,3 +37,6 @@ async def search_start(cb: CallbackQuery, state: FSMContext, session: AsyncSessi
         await cb.message.edit_text('<b>🔹 Главное меню </b>', reply_markup=kb.get_main_menu_kb())
     except:
         await cb.message.answer('<b>🔹 Главное меню </b>', reply_markup=kb.get_main_menu_kb())
+
+    await models.LogsUser.add(session=session, user_id=cb.from_user.id, button='🔙 Назад', comment='Главное меню')
+

@@ -2,7 +2,7 @@ import sqlalchemy as sa
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.dialects import postgresql as psql
 from sqlalchemy.ext.asyncio import AsyncSession
-from datetime import datetime, date
+from datetime import datetime, date, time
 
 import typing as t
 
@@ -17,6 +17,7 @@ class GoogleTable(Base):
     tournament: Mapped[str] = mapped_column(sa.Text, nullable=True)
     match: Mapped[str] = mapped_column(sa.Text, nullable=True)
     date: Mapped[date] = mapped_column(sa.Date, nullable=True)
+    time: Mapped[time] = mapped_column(sa.Time, nullable=True)
     is_top_match: Mapped[bool] = mapped_column(sa.Boolean, nullable=True)
     coefficient: Mapped[str] = mapped_column(sa.Text, nullable=True)
     prediction: Mapped[str] = mapped_column(sa.Text, nullable=True)
@@ -33,7 +34,8 @@ class GoogleTable(Base):
             sport: str = None,
             tournament: str = None,
             match: str = None,
-            date: datetime = None,
+            date: date = None,
+            time: time = None,
             is_top_match: bool = None,
             coefficient: str = None,
             prediction: str = None,
@@ -54,15 +56,13 @@ class GoogleTable(Base):
                 tournament=tournament,
                 match=match,
                 date=date,
+                time=time,
                 is_top_match=is_top_match,
                 coefficient=coefficient,
                 prediction=prediction,
                 bet=bet,
                 image=image,
                 broadcast=broadcast,
-                # row_number=row_number,
-                # created_at=now,
-                # updated_at=now,
             )
             .on_conflict_do_update(
                 index_elements=[cls.id],
@@ -71,14 +71,13 @@ class GoogleTable(Base):
                     "tournament": tournament,
                     "match": match,
                     "date": date,
+                    "time": time,
                     "is_top_match": is_top_match,
                     "coefficient": coefficient,
                     "prediction": prediction,
                     "bet": bet,
                     "image": image,
                     "broadcast": broadcast,
-                    # "row_number": row_number,
-                    # "updated_at": now,
                 }
             )
         )
@@ -138,7 +137,9 @@ class GoogleTable(Base):
         return result.scalars().all()
 
     @classmethod
-    async def search_by_match(cls, session: AsyncSession, substring: str, sport: str = None) -> list[t.Self]:
+    async def search_by_match(
+            cls, session: AsyncSession, substring: str, sport: str = None, tournament: str = None
+    ) -> list[t.Self]:
         stmt = sa.select(cls).limit(8)
 
         if substring:
@@ -146,6 +147,9 @@ class GoogleTable(Base):
 
         if sport:
             stmt = stmt.where(cls.sport == sport)
+
+        if sport:
+            stmt = stmt.where(cls.tournament == tournament)
 
         result = await session.execute(stmt)
         return result.scalars().all()

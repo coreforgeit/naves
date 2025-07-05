@@ -24,7 +24,7 @@ class AdminUser(Base):
         # Проверяем, существует ли такой пользователь
         stmt = sa.select(cls).where(cls.username == username)
         result = await session.execute(stmt)
-        existing_user = result.scalar_one_or_none()
+        existing_user = result.scalars().first()
 
         if existing_user:
             return False  # Пользователь уже существует
@@ -48,8 +48,10 @@ class AdminUser(Base):
         stmt = sa.select(cls).where(cls.username == username)
         result = await session.execute(stmt)
         user = result.scalars().first()
-        logging.warning(f'user {user}')
-        logging.warning(f'bcrypt {bcrypt.verify(password, user.hashed_password)}')
-        if user and bcrypt.verify(password, user.hashed_password):
+        # logging.warning(f'user {user}')
+        # logging.warning(f'bcrypt {bcrypt.verify(password, user.hashed_password)}')
+        if not user:
+            return None
+        elif bcrypt.verify(password, user.hashed_password):
             return user
         return None

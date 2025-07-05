@@ -6,18 +6,24 @@ from aiogram import Dispatcher
 from datetime import datetime
 
 import models
-from init import set_main_menu, bot, ENGINE, DBSessionMiddleware
+from init import set_main_menu, bot, ENGINE
 from settings import conf, log_error
 from models.base import init_models
 from handlers.main_menu import main_router
 from handlers import client_router
 from handlers.exceptions import error_router
+from middlewares import BanCheckMiddleware, DBSessionMiddleware
 
 
 dp = Dispatcher()
 dp.message.middleware(DBSessionMiddleware())
 dp.callback_query.middleware(DBSessionMiddleware())
 dp.inline_query.middleware(DBSessionMiddleware())
+dp.errors.middleware(DBSessionMiddleware())
+
+
+dp.message.middleware(BanCheckMiddleware())
+dp.callback_query.middleware(BanCheckMiddleware())
 
 
 async def main() -> None:
