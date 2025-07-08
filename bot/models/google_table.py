@@ -87,11 +87,11 @@ class GoogleTable(Base):
             await conn.commit()
 
     @classmethod
-    async def get_unique_sports(cls, session: AsyncSession, only_top: bool) -> list[str]:
+    async def get_unique_sports(cls, session: AsyncSession) -> list[str]:
         stmt = sa.select(sa.func.distinct(cls.sport)).where(cls.sport.is_not(None))
 
-        if only_top:
-            stmt = stmt.where(cls.is_top_match.is_(True))
+        # if only_top:
+        #     stmt = stmt.where(cls.is_top_match.is_(True))
 
         result = await session.execute(stmt)
         sports = [row[0] for row in result.fetchall()]
@@ -99,12 +99,12 @@ class GoogleTable(Base):
 
     @classmethod
     async def get_tournaments_by_sport(cls, session: AsyncSession, sport: str, only_top: bool) -> list[str]:
-        today = datetime.now().date()
+        now = datetime.now()
         stmt = (
             sa.select(sa.func.distinct(cls.tournament))
             .where(
                 cls.sport == sport,
-                cls.date >= today
+                cls.date >= now.date(),
             )
         )
 
@@ -123,15 +123,19 @@ class GoogleTable(Base):
             tournament: str,
             only_top: bool
     ) -> list[t.Self]:
-        today = datetime.now().date()
+        now = datetime.now()
+
         stmt = sa.select(cls).where(
-            cls.date >= today,
-            cls.sport == sport,
-            cls.tournament == tournament
+            cls.date >= now.date(),
         )
 
         if only_top:
             stmt = stmt.where(cls.is_top_match.is_(True))
+        else:
+            stmt = stmt.where(
+                cls.sport == sport,
+                cls.tournament == tournament
+            )
 
         result = await session.execute(stmt)
         return result.scalars().all()
@@ -148,7 +152,7 @@ class GoogleTable(Base):
         if sport:
             stmt = stmt.where(cls.sport == sport)
 
-        if sport:
+        if tournament:
             stmt = stmt.where(cls.tournament == tournament)
 
         result = await session.execute(stmt)

@@ -15,7 +15,7 @@ def get_back_kb(cb: str = CB.COM_START.value, value: str = Action.BACK.value) ->
 def get_main_menu_kb() -> InlineKeyboardMarkup:
     kb = InlineKeyboardBuilder()
     kb.button(text='🔍 Поиск матча', callback_data=f'{CB.SEARCH_MATCH.value}:0')
-    kb.button(text='🔥 Топ-прогнозы', callback_data=f'{CB.SEARCH_MATCH.value}:1')
+    kb.button(text='🔥 Топ-прогнозы', callback_data=f'{CB.SEARCH_MATCH.value}:{Action.TOP.value}')
     return kb.adjust(1).as_markup()
 
 
@@ -43,19 +43,26 @@ def get_tournaments_kb(tournaments: list[str]) -> InlineKeyboardMarkup:
 
 
 # Кнопки подписаться на канал
-def get_match_kb(match_list: list[models.GoogleTable]) -> InlineKeyboardMarkup:
+def get_match_kb(match_list: list[models.GoogleTable], is_top: bool) -> InlineKeyboardMarkup:
     kb = InlineKeyboardBuilder()
     kb.button(text='🔍 Поиск', switch_inline_query_current_chat='')
 
     for match in match_list:
         kb.button(text=match.match, callback_data=f'{CB.SEARCH_MATCH.value}:{match.id}')
-    kb.button(text='🔙 Назад', callback_data=f'{CB.SEARCH_MATCH.value}:{Action.BACK.value}')
+
+    if is_top:
+        kb.button(text='🔙 Назад', callback_data=f'{CB.COM_START.value}:{Action.BACK.value}')
+    else:
+        kb.button(text='🔙 Назад', callback_data=f'{CB.SEARCH_MATCH.value}:{Action.BACK.value}')
     return kb.adjust(1).as_markup()
 
 
 # Кнопки подписаться на канал
-def get_forecast_kb() -> InlineKeyboardMarkup:
+def get_forecast_kb(is_top: bool) -> InlineKeyboardMarkup:
     kb = InlineKeyboardBuilder()
     kb.button(text='💰 Сделать ставку', url=conf.bet_url)
-    kb.button(text='🔙 Назад', callback_data=f'{CB.SEARCH_MATCH.value}:{Action.BACK.value}')
+    if is_top:
+        kb.button(text='🔙 Назад', callback_data=f'{CB.SEARCH_MATCH.value}:{Action.TOP.value}')
+    else:
+        kb.button(text='🔙 Назад', callback_data=f'{CB.SEARCH_MATCH.value}:{Action.BACK.value}')
     return kb.adjust(1).as_markup()

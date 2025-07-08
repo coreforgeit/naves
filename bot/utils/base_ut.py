@@ -57,7 +57,7 @@ async def download_photo(url: str) -> BufferedInputFile | None:
 
 
 # отправляет прогноз
-async def send_forecast(session: AsyncSession, chat_id: int, forecast: models.GoogleTable) -> None:
+async def send_forecast(session: AsyncSession, chat_id: int, forecast: models.GoogleTable, is_top: bool) -> None:
     image = await models.FcImage.get_by_url(session, url=forecast.image, bot_id=conf.bot_id)
     if not image:
         photo = await download_photo(forecast.image)
@@ -69,10 +69,10 @@ async def send_forecast(session: AsyncSession, chat_id: int, forecast: models.Go
     text = get_forecast_text(forecast)
     try:
         sent = await bot.send_photo(
-            chat_id=chat_id, photo=photo, caption=text, reply_markup=kb.get_forecast_kb()
+            chat_id=chat_id, photo=photo, caption=text, reply_markup=kb.get_forecast_kb(is_top)
         )
         if add_photo:
             await models.FcImage.add(session, url=forecast.image, bot_id=conf.bot_id, file_id=sent.photo[-1].file_id)
     except Exception as e:
         log_error(e)
-        await bot.send_message(chat_id=chat_id, text=text, reply_markup=kb.get_forecast_kb())
+        await bot.send_message(chat_id=chat_id, text=text, reply_markup=kb.get_forecast_kb(is_top))

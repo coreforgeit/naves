@@ -20,19 +20,35 @@ async def search_start(cb: CallbackQuery, state: FSMContext, session: AsyncSessi
     # действия пользователя
     action_button = value
     comment = None
+    next_step = None
+
+    top_match = True if value == Action.TOP.value else False
 
     step_key = 'step'
     current_state = await state.get_state()
-    if not current_state:
+
+    if value == Action.TOP.value:
+        next_step = SearchStep.MATCH.value
         await state.set_state(UserState.SEARCH.value)
-        await state.update_data(data={step_key: SearchStep.START.value})
+        await state.update_data(data={'top_match': True})
+        action_button = '🔥 Топ-прогнозы'
+
+    elif not current_state:
+        await state.set_state(UserState.SEARCH.value)
+        next_step = SearchStep.SPORT.value
 
     data = await state.get_data()
-    step = data.get(step_key)
+    print(data)
 
-    enum_step = -1 if value == Action.BACK.value else 1
-    next_step = ut.get_adjacent_enum(enum_cls=SearchStep, current_value=step, enum_step=enum_step)
+    if not next_step:
+        step = data.get(step_key)
+        enum_step = -1 if value == Action.BACK.value else 1
+        next_step = ut.get_adjacent_enum(enum_cls=SearchStep, current_value=step, enum_step=enum_step)
+
     await state.update_data(data={step_key: next_step})
+
+    print(f'next_step: {next_step}')
+    print(f'top_match: {top_match}')
 
     if value == Action.BACK.value:
         comment = action_button
@@ -40,12 +56,9 @@ async def search_start(cb: CallbackQuery, state: FSMContext, session: AsyncSessi
 
     if next_step == SearchStep.SPORT.value:
         if value != Action.BACK.value:
-            top_match = bool(int(value)) if value.isdigit() else False
-            await state.update_data(data={'top_match': top_match})
+            action_button = '🔍 Поиск матча'
 
-            action_button = '🔥 Топ-прогнозы' if top_match else '🔍 Поиск матча'
-
-        sports = await models.GoogleTable.get_unique_sports(session,  only_top=data.get('sport', False))
+        sports = await models.GoogleTable.get_unique_sports(session)
         text = f'Выбери вид спорта'
         reply_markup = kb.get_sports_kb(sports)
 
@@ -71,29 +84,34 @@ async def search_start(cb: CallbackQuery, state: FSMContext, session: AsyncSessi
         else:
             await state.update_data(data={'tournament': value})
 
+        top_match = data.get('top_match', False)
+        print(f'top_match 2: {top_match}')
         forecasts = await models.GoogleTable.get_forecast_many(
             session,
             sport=data.get('sport'),
             tournament=value,
-            only_top=data.get('sport', False)
+            only_top=top_match
         )
 
         text = f'Выбери матч или перейди к ручному поиску'
-        reply_markup = kb.get_match_kb(forecasts)
-
-        # await cb.message.edit_text(text=text, reply_markup=kb.get_match_kb(forecasts))
+        reply_markup = kb.get_match_kb(match_list=forecasts, is_top=top_match)
 
     elif next_step == SearchStep.RESULT.value:
         forecast = await models.GoogleTable.get_by_id(session, entry_id=int(value))
+
+        top_match = data.get('top_match', False)
+        if top_match:
+            comment = '🔥 Топ-прогнозы'
 
         await cb.message.edit_reply_markup(reply_markup=None)
         await ut.send_forecast(
             session,
             chat_id=cb.from_user.id,
             forecast=forecast,
+            is_top=top_match
         )
         # что нажал пользователь
-        await models.LogsUser.add(session=session, user_id=cb.from_user.id, button=forecast.match)
+        await models.LogsUser.add(session=session, user_id=cb.from_user.id, button=forecast.match, comment=comment)
         return
     else:
         text = f'‼️ Произошёл сбой, попробуйте ещё раз /{MenuCommand.START.command}'
@@ -111,51 +129,3 @@ async def search_start(cb: CallbackQuery, state: FSMContext, session: AsyncSessi
         button=action_button,
         comment=comment
     )
-
-
-
-
-# выбор турнира
-# @client_router.callback_query(lambda cb: cb.data.startswith(CB.SEARCH_TOURNAMENT.value))
-# async def search_tournament(cb: CallbackQuery, state: FSMContext, session: AsyncSession):
-#     _, sport = cb.data.split(':')
-#
-#     if sport == Action.BACK.value:
-#         data = await state.get_data()
-#         sport = data.get('sport')
-#
-#     else:
-#         await state.set_state(UserState.SEARCH.value)
-#         await state.update_data(data={'sport': sport})
-#
-#     tournaments = await models.GoogleTable.get_tournaments_by_sport(session, sport=sport)
-#     text = f'Выбери турнир или перейди к ручному поиску'
-#
-#     await cb.message.edit_text(text=text, reply_markup=kb.get_tournaments_kb(tournaments))
-
-
-# выбор статистика
-# @client_router.callback_query(lambda cb: cb.data.startswith(CB.SEARCH_GET_RESULT.value))
-# async def search_tournament(cb: CallbackQuery, state: FSMContext, session: AsyncSession):
-#     _, tournament = cb.data.split(':')
-#
-#     top_match = True if tournament == Action.TOP.value else False
-#
-#     data = await state.get_data()
-#     forecasts = await models.GoogleTable.get_forecast_many(
-#         session,
-#         sport=data.get('sport'),
-#         tournament=tournament,
-#         only_top=top_match
-#     )
-#
-#     await cb.message.edit_reply_markup(reply_markup=None)
-#
-#     for forecast in forecasts:
-#         await ut.send_forecast(
-#             session,
-#             chat_id=cb.from_user.id,
-#             forecast=forecast,
-#             top_match=top_match
-#         )
-

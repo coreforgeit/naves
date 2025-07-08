@@ -24,24 +24,17 @@ class RowIn(BaseModel):
 
     @field_validator('date_match', mode='before')
     def parse_date(cls, v):
-        if v is None:
-            return None
         try:
             t = datetime.strptime(v, conf.date_format)
-
             return t.date()
         except Exception:
             raise ValueError("Некорректный формат даты")
 
     @field_validator('time_match', mode='before')
     def parse_time(cls, v):
-        if v is None:
-            return None
         try:
             t = datetime.strptime(v, conf.time_format)
-
             return t.time()
-            # return datetime.now().time()
         except Exception:
             raise ValueError("Некорректный формат времени")
 

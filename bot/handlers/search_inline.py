@@ -41,7 +41,7 @@ async def inline_search_handler(inline_query: InlineQuery, state: FSMContext, se
                     input_message_content=InputTextMessageContent(
                         message_text=text
                     ),
-                    description=forecast.date.strftime(conf.date_format),
+                    description=forecast.date.strftime(conf.date_format) if forecast.date else None,
                 )
             )
     # Отправляем результаты пользователю

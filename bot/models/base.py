@@ -13,7 +13,6 @@ METADATA = sa.MetaData ()
 
 async def init_models(engin):
     async with engin.begin () as conn:
-        await conn.run_sync (METADATA.drop_all)
         await conn.run_sync (METADATA.create_all)
 
 
