@@ -52,8 +52,10 @@ async def download_photo(url: str) -> BufferedInputFile | None:
             if resp.status != 200:
                 return None
             photo_bytes = await resp.read()
+    'https://dumpster.cdn.sports.ru/8/b8/362ff628abf3d6e2c1018ec6d76f7.png'
+    filename = url.split("/", )[-1]
 
-    return BufferedInputFile(file=photo_bytes, filename=f'dddd.png')
+    return BufferedInputFile(file=photo_bytes, filename=filename)
 
 
 # отправляет прогноз
@@ -72,7 +74,7 @@ async def send_forecast(session: AsyncSession, chat_id: int, forecast: models.Go
             chat_id=chat_id, photo=photo, caption=text, reply_markup=kb.get_forecast_kb(is_top)
         )
         if add_photo:
-            await models.FcImage.add(session, url=forecast.image, bot_id=conf.bot_id, file_id=sent.photo[-1].file_id)
+            await models.FcImage.add(session, url=forecast.image, bot_id=conf.bot_id, tg_photo_id=sent.photo[-1].file_id)
     except Exception as e:
         log_error(e)
         await bot.send_message(

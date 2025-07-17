@@ -17,10 +17,10 @@ class FcImage(Base):
     bot_id: Mapped[int] = mapped_column(sa.BigInteger)
 
     @classmethod
-    async def add(cls, session: AsyncSession, url: str, bot_id: int, file_id: str) -> t.Optional[t.Self]:
+    async def add(cls, session: AsyncSession, url: str, bot_id: int, tg_photo_id: str) -> t.Optional[t.Self]:
         """Добавляет строку в кеш"""
 
-        stmt = sa.insert(cls).values(url=url, bot_id=bot_id, file_id=file_id)
+        stmt = sa.insert(cls).values(url=url, bot_id=bot_id, tg_photo_id=tg_photo_id)
 
         result = await session.execute(stmt)
         return result.scalars().first()
