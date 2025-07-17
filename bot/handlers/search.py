@@ -103,7 +103,12 @@ async def search_start(cb: CallbackQuery, state: FSMContext, session: AsyncSessi
         if top_match:
             comment = '🔥 Топ-прогнозы'
 
-        await cb.message.edit_reply_markup(reply_markup=None)
+        # await cb.message.edit_reply_markup(reply_markup=None)
+        try:
+            await cb.message.delete()
+        except Exception as e:
+            log_error(e)
+
         await ut.send_forecast(
             session,
             chat_id=cb.from_user.id,
