@@ -54,7 +54,7 @@ async def download_photo(url: str) -> BufferedInputFile | None:
             photo_bytes = await resp.read()
     'https://dumpster.cdn.sports.ru/8/b8/362ff628abf3d6e2c1018ec6d76f7.png'
     filename = url.split("/", )[-1]
-    log_error(f'Скачал файл по ссылке {url} file {filename}')
+    log_error(f'Скачал файл по ссылке {url} file {filename}', wt=False)
     return BufferedInputFile(file=photo_bytes, filename=filename)
 
 
