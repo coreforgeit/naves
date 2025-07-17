@@ -75,4 +75,6 @@ async def send_forecast(session: AsyncSession, chat_id: int, forecast: models.Go
             await models.FcImage.add(session, url=forecast.image, bot_id=conf.bot_id, file_id=sent.photo[-1].file_id)
     except Exception as e:
         log_error(e)
-        await bot.send_message(chat_id=chat_id, text=text, reply_markup=kb.get_forecast_kb(is_top))
+        await bot.send_message(
+            chat_id=chat_id, text=text, reply_markup=kb.get_forecast_kb(is_top), disable_web_page_preview=True
+        )

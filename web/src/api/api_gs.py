@@ -47,11 +47,13 @@ async def add_row(
     body: RowRequestSingle,
     session: AsyncSession = Depends(get_async_session)
 ) -> RowResult:
+    logger.warning(f'api_router')
     try:
         # result = await process_row(body.row, session)
         try:
             payload = RowIn.parse_obj(body.row)
             result = await process_row(payload, session)
+            logger.warning(f'payload: {payload}')
         except Exception as e:
             err: dict = e.errors()[0]
             e_text = err.get('msg', 'Value error, f')
@@ -82,6 +84,8 @@ async def add_rows(
         for item in body.rows:
             try:
                 payload = RowIn.parse_obj(item)
+                result = await process_row(payload, session)
+                results.append(result)
             except Exception as e:
                 err: dict = e.errors()[0]
                 e_text = err.get('msg', 'Value error, f')
@@ -92,8 +96,7 @@ async def add_rows(
                 ))
                 continue
             # logger.warning(f'payload: {payload}')
-            result = await process_row(payload, session)
-            results.append(result)
+
         return results
     except Exception as e:
         # Если структура данных неверная

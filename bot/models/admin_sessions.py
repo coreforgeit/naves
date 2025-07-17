@@ -31,7 +31,7 @@ class AdminSession(Base):
         return result.scalars().first()
 
     @classmethod
-    async def delete(cls, session: AsyncSession, username: str, session_token: str) -> t.Self | None:
+    async def delete(cls, session: AsyncSession, username: str, session_token: str) -> None:
         stmt = sa.delete(cls).where(cls.username == username, cls.session_token == session_token)
         await session.execute(stmt)
         await session.commit()

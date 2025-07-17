@@ -20,7 +20,7 @@ class FcImage(Base):
     async def add(cls, session: AsyncSession, url: str, bot_id: int, file_id: str) -> t.Optional[t.Self]:
         """Добавляет строку в кеш"""
 
-        stmt = sa.select(cls).where(cls.url == url)
+        stmt = sa.insert(cls).values(url=url, bot_id=bot_id, file_id=file_id)
 
         result = await session.execute(stmt)
         return result.scalars().first()
