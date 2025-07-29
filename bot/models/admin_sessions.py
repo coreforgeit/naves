@@ -11,7 +11,7 @@ from .base import Base
 class AdminSession(Base):
     __tablename__ = "admin_sessions"
 
-    username: Mapped[str] = mapped_column(sa.String(32), unique=True, nullable=False)
+    username: Mapped[str] = mapped_column(sa.String(32), nullable=False)
     session_token: Mapped[str] = mapped_column(sa.String(128), nullable=False)
 
     @classmethod

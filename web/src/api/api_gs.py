@@ -17,7 +17,7 @@ api_router = APIRouter()
 # Выносим логику записи в отдельную функцию
 async def process_row(payload: RowIn, session: AsyncSession) -> RowResult:
     try:
-        logger.warning('----')
+        # logger.warning('----')
         await GoogleTable.add(
             session=session,
             row_id=payload.row_number,
@@ -47,13 +47,13 @@ async def add_row(
     body: RowRequestSingle,
     session: AsyncSession = Depends(get_async_session)
 ) -> RowResult:
-    logger.warning(f'api_router')
+    # logger.warning(f'api_router')
     try:
         # result = await process_row(body.row, session)
         try:
             payload = RowIn.parse_obj(body.row)
             result = await process_row(payload, session)
-            logger.warning(f'payload: {payload}')
+            # logger.warning(f'payload: {payload}')
         except Exception as e:
             err: dict = e.errors()[0]
             e_text = err.get('msg', 'Value error, f')

@@ -7,8 +7,7 @@ class Config:
     debug = bool(int(os.getenv('DEBUG')))
 
     if debug:
-        # token = os.getenv("TOKEN_TEST")
-        token = os.getenv("TOKEN")
+        token = os.getenv("TOKEN_TEST")
     else:
         token = os.getenv("TOKEN")
 

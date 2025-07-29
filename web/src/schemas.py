@@ -33,7 +33,8 @@ class RowIn(BaseModel):
     @field_validator('time_match', mode='before')
     def parse_time(cls, v):
         try:
-            t = datetime.strptime(v, conf.time_format)
+            t = datetime.strptime(v, conf.time_format) - timedelta(hours=3)  # приводим к utc
+
             return t.time()
         except Exception:
             raise ValueError("Некорректный формат времени")

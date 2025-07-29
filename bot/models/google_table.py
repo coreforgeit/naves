@@ -2,7 +2,7 @@ import sqlalchemy as sa
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.dialects import postgresql as psql
 from sqlalchemy.ext.asyncio import AsyncSession
-from datetime import datetime, date, time
+from datetime import datetime, date, time, timedelta
 
 import typing as t
 
@@ -26,6 +26,13 @@ class GoogleTable(Base):
     broadcast: Mapped[str] = mapped_column(sa.String, nullable=True)
     # row_number: Mapped[int] = mapped_column(sa.Integer, nullable=True)
 
+    def msk_time(self):
+        # Для примера возьмём сегодняшнюю дату или дату из self.date, если она есть
+        base_date = self.date or datetime.today().date()
+        dt = datetime.combine(base_date, self.time)  # объединяем дату и время в datetime
+        dt_plus_3 = dt + timedelta(hours=3)          # прибавляем 3 часа
+        return dt_plus_3.time()
+
     @classmethod
     async def add(
             cls,
@@ -45,9 +52,6 @@ class GoogleTable(Base):
             # row_number: int = None
     ) -> None:
         """Добавляет или обновляет запись в таблице match_rows"""
-
-        now = datetime.now()
-
         stmt = (
             psql.insert(cls)
             .values(
@@ -105,6 +109,7 @@ class GoogleTable(Base):
             .where(
                 cls.sport == sport,
                 cls.date >= now.date(),
+                cls.time >= now.time(),
             )
         )
 
@@ -127,6 +132,7 @@ class GoogleTable(Base):
 
         stmt = sa.select(cls).where(
             cls.date >= now.date(),
+            cls.time >= now.time(),
         )
 
         if only_top:
@@ -144,7 +150,12 @@ class GoogleTable(Base):
     async def search_by_match(
             cls, session: AsyncSession, substring: str, sport: str = None, tournament: str = None
     ) -> list[t.Self]:
-        stmt = sa.select(cls).limit(8)
+        now = datetime.now()
+
+        stmt = sa.select(cls).where(
+            cls.date >= now.date(),
+            cls.time >= now.time(),
+        ).limit(8)
 
         if substring:
             stmt = stmt.where(sa.func.lower(cls.match).like(f"%{substring.lower()}%"))

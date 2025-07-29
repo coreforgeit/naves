@@ -38,7 +38,7 @@ def test_add_rows():
                 "sport": "Футбол",
                 "tournament": "АПЛ",
                 "match": "Ливерпуль - Арсенал",
-                "date_match": "21.05.2026",
+                "date_match": "21.08.2026",
                 "time_match": "21:00",
                 "is_top_match": "да",
                 "coefficient": "Ничья: 3.65\n\nПобеда хозяев: 1.75\n\nПобеда гостей: 5.20",
@@ -53,7 +53,7 @@ def test_add_rows():
                 "sport": "Хоккей",
                 "tournament": "КХЛ",
                 "match": "Амур - Куньлунь",
-                "date_match": "21.05.2026",
+                "date_match": "21.08.2026",
                 "time_match": "21:00",
                 "is_top_match": "нет",
                 "coefficient": "Ничья: 3.65\n\nПобеда хозяев: 1.75\n\nПобеда гостей: 5.20",
@@ -68,7 +68,7 @@ def test_add_rows():
                 "sport": "Футбол",
                 "tournament": "Лига Чемпионов",
                 "match": "Барселона - Реал Мадрид",
-                "date_match": "21.05.2026",
+                "date_match": "21.08.2026",
                 "time_match": "21:00",
                 "is_top_match": "да",
                 "coefficient": "Ничья: 3.65\n\nПобеда хозяев: 1.75\n\nПобеда гостей: 5.20",
@@ -83,7 +83,7 @@ def test_add_rows():
                 "sport": "Хоккей",
                 "tournament": "НХЛ",
                 "match": "Детройт - Юта",
-                "date_match": "21.05.2026",
+                "date_match": "21.08.2026",
                 "time_match": "21:00",
                 "is_top_match": "да",  # <-- Некорректное значение, тут будет ошибка
                 "coefficient": "Ничья: 3.65\n\nПобеда хозяев: 1.75\n\nПобеда гостей: 5.20",
@@ -102,5 +102,5 @@ def test_add_rows():
 
 
 if __name__ == "__main__":
-    test_add_row()
-    # test_add_rows()
+    # test_add_row()
+    test_add_rows()
